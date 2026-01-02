@@ -1,0 +1,67 @@
+name: Generate Manifest
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**/*.md'
+      - '.github/workflows/generate-manifest.yml'
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Generate manifest.json
+        run: |
+          #!/bin/bash
+          set -e
+
+          # Collect all entries
+          entries=()
+
+          while IFS= read -r filepath; do
+            # Skip files in hidden directories
+            [[ "$filepath" == .* ]] && continue
+
+            # Extract title from first H1 (# Title)
+            title=$(grep -m1 "^# " "$filepath" 2>/dev/null | sed 's/^# //' || true)
+
+            # Fallback to filename if no H1 found
+            if [ -z "$title" ]; then
+              basename_no_ext=$(basename "$filepath" .md)
+              title=$(echo "$basename_no_ext" | sed 's/-/ /g; s/\b\w/\u&/g')
+            fi
+
+            # Escape quotes in title
+            title=$(echo "$title" | sed 's/"/\\"/g')
+
+            entries+=("$(printf '  { "path": "%s", "title": "%s" }' "$filepath" "$title")")
+          done < <(find . -name "*.md" -type f | sed 's|^\./||' | sort)
+
+          # Build JSON
+          echo "[" > manifest.json
+          for i in "${!entries[@]}"; do
+            if [ $i -gt 0 ]; then
+              echo "," >> manifest.json
+            fi
+            printf '%s' "${entries[$i]}" >> manifest.json
+          done
+          echo "" >> manifest.json
+          echo "]" >> manifest.json
+
+          echo "Generated manifest.json:"
+          cat manifest.json
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add manifest.json
+          git diff --staged --quiet || git commit -m "chore: update manifest.json"
+          git push
