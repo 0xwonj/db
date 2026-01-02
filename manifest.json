@@ -1,5 +1,6 @@
 [
   { "path": "blog/hello-world.md", "title": "Hello, World" },
+  { "path": "cv.pdf", "title": "Cv" },
   { "path": "projects/zkdungeon.md", "title": "zkDungeon" },
   { "path": "research/zk-snarks-intro.md", "title": "Introduction to zk-SNARKs" }
 ]
