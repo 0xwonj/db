@@ -3,9 +3,9 @@ name: Generate Manifest
 on:
   push:
     branches: [main]
-    paths:
-      - '**/*.md'
-      - '.github/workflows/generate-manifest.yml'
+    paths-ignore:
+      - '.github/**'
+      - 'manifest.json'
   workflow_dispatch:
 
 jobs:
@@ -22,27 +22,53 @@ jobs:
           #!/bin/bash
           set -e
 
+          # Function to extract title based on file type
+          extract_title() {
+            local filepath="$1"
+            local ext="${filepath##*.}"
+            local title=""
+
+            case "$ext" in
+              md)
+                # Extract from first H1
+                title=$(grep -m1 "^# " "$filepath" 2>/dev/null | sed 's/^# //' || true)
+                ;;
+              html|htm)
+                # Extract from <title> tag
+                title=$(grep -oP '(?<=<title>)[^<]+' "$filepath" 2>/dev/null | head -1 || true)
+                ;;
+              org)
+                # Extract from #+TITLE:
+                title=$(grep -m1 "^#+TITLE:" "$filepath" 2>/dev/null | sed 's/^#+TITLE:\s*//' || true)
+                ;;
+            esac
+
+            # Fallback to filename
+            if [ -z "$title" ]; then
+              local basename_no_ext=$(basename "$filepath" | sed 's/\.[^.]*$//')
+              title=$(echo "$basename_no_ext" | sed 's/[-_]/ /g; s/\b\w/\u&/g')
+            fi
+
+            # Escape quotes
+            echo "$title" | sed 's/"/\\"/g'
+          }
+
           # Collect all entries
           entries=()
 
           while IFS= read -r filepath; do
-            # Skip files in hidden directories
+            # Skip hidden files/directories and manifest.json
             [[ "$filepath" == .* ]] && continue
+            [[ "$filepath" == "manifest.json" ]] && continue
 
-            # Extract title from first H1 (# Title)
-            title=$(grep -m1 "^# " "$filepath" 2>/dev/null | sed 's/^# //' || true)
-
-            # Fallback to filename if no H1 found
-            if [ -z "$title" ]; then
-              basename_no_ext=$(basename "$filepath" .md)
-              title=$(echo "$basename_no_ext" | sed 's/-/ /g; s/\b\w/\u&/g')
-            fi
-
-            # Escape quotes in title
-            title=$(echo "$title" | sed 's/"/\\"/g')
-
+            title=$(extract_title "$filepath")
             entries+=("$(printf '  { "path": "%s", "title": "%s" }' "$filepath" "$title")")
-          done < <(find . -name "*.md" -type f | sed 's|^\./||' | sort)
+          done < <(find . -type f \
+            ! -path './.git/*' \
+            ! -path './.github/*' \
+            ! -name 'manifest.json' \
+            ! -name '.*' \
+            | sed 's|^\./||' | sort)
 
           # Build JSON
           echo "[" > manifest.json
