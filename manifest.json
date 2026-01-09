@@ -1,0 +1,111 @@
+{
+  "files": [
+    {
+      "path": "blog/hello-world.md",
+      "title": "Hello World",
+      "size": 150,
+      "modified": 1718409600,
+      "tags": [
+        "blog",
+        "intro"
+      ]
+    },
+    {
+      "path": "blog/rust-guide.md",
+      "title": "Rust 입문 가이드",
+      "size": 213,
+      "modified": 1767928741,
+      "tags": [
+        "rust",
+        "programming",
+        "tutorial"
+      ]
+    },
+    {
+      "path": "cv.pdf",
+      "title": "cv",
+      "size": 55745,
+      "modified": 1767928741,
+      "tags": []
+    },
+    {
+      "path": "private/secret.md",
+      "title": "Secret Document",
+      "size": 39,
+      "modified": 1767928741,
+      "tags": [
+        "private",
+        "confidential"
+      ],
+      "encryption": {
+        "algorithm": "AES-256-GCM",
+        "wrapped_keys": [
+          {
+            "recipient": "0x1234567890abcdef1234567890abcdef12345678",
+            "encrypted_key": "base64_wrapped_symmetric_key_for_recipient_1..."
+          },
+          {
+            "recipient": "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+            "encrypted_key": "base64_wrapped_symmetric_key_for_recipient_2..."
+          }
+        ]
+      }
+    },
+    {
+      "path": "projects/no-title.md",
+      "title": "no-title",
+      "size": 70,
+      "modified": 1767928741,
+      "tags": []
+    },
+    {
+      "path": "projects/webapp.md",
+      "title": "Web Application Project",
+      "size": 85,
+      "modified": 1767928741,
+      "tags": []
+    },
+    {
+      "path": "projects/zkdungeon/intro.md",
+      "title": "zkDungeon",
+      "size": 910,
+      "modified": 1767929246,
+      "tags": []
+    }
+  ],
+  "directories": [
+    {
+      "path": "blog",
+      "title": "Blog",
+      "tags": [
+        "posts",
+        "articles"
+      ],
+      "description": "개인 블로그 글 모음",
+      "icon": "folder-edit",
+      "thumbnail": "blog/cover.png"
+    },
+    {
+      "path": "projects",
+      "title": "Projects",
+      "tags": [
+        "portfolio",
+        "work"
+      ],
+      "description": null,
+      "icon": null,
+      "thumbnail": null
+    },
+    {
+      "path": "",
+      "title": "Home",
+      "tags": [
+        "root",
+        "home"
+      ],
+      "description": null,
+      "icon": null,
+      "thumbnail": null
+    }
+  ]
+}
