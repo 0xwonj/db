@@ -3,91 +3,44 @@ name: Generate Manifest
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - '.github/**'
-      - 'manifest.json'
-  workflow_dispatch:
+    paths:
+      - '~/**/*.md'
+      - '~/**/*.pdf'
+      - '~/**/*.png'
+      - '~/**/*.jpg'
+      - '~/**/*.jpeg'
+      - '~/**/*.gif'
+      - '~/**/*.webp'
+      - '~/**/*.svg'
+      - '~/**/*.link'
+      - '~/**/*.enc'
+      - '~/**/*.keys'
+      - '~/**/.meta.json'
 
 jobs:
   generate:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # Full history for git log timestamps
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
 
       - name: Generate manifest.json
+        run: python3 generate-manifest.py
+
+      - name: Commit manifest
         run: |
-          #!/bin/bash
-          set -e
-
-          # Function to extract title based on file type
-          extract_title() {
-            local filepath="$1"
-            local ext="${filepath##*.}"
-            local title=""
-
-            case "$ext" in
-              md)
-                # Extract from first H1
-                title=$(grep -m1 "^# " "$filepath" 2>/dev/null | sed 's/^# //' || true)
-                ;;
-              html|htm)
-                # Extract from <title> tag
-                title=$(grep -oP '(?<=<title>)[^<]+' "$filepath" 2>/dev/null | head -1 || true)
-                ;;
-              org)
-                # Extract from #+TITLE:
-                title=$(grep -m1 "^#+TITLE:" "$filepath" 2>/dev/null | sed 's/^#+TITLE:\s*//' || true)
-                ;;
-            esac
-
-            # Fallback to filename
-            if [ -z "$title" ]; then
-              local basename_no_ext=$(basename "$filepath" | sed 's/\.[^.]*$//')
-              title=$(echo "$basename_no_ext" | sed 's/[-_]/ /g; s/\b\w/\u&/g')
-            fi
-
-            # Escape quotes
-            echo "$title" | sed 's/"/\\"/g'
-          }
-
-          # Collect all entries
-          entries=()
-
-          while IFS= read -r filepath; do
-            # Skip hidden files/directories and manifest.json
-            [[ "$filepath" == .* ]] && continue
-            [[ "$filepath" == "manifest.json" ]] && continue
-
-            title=$(extract_title "$filepath")
-            entries+=("$(printf '  { "path": "%s", "title": "%s" }' "$filepath" "$title")")
-          done < <(find . -type f \
-            ! -path './.git/*' \
-            ! -path './.github/*' \
-            ! -name 'manifest.json' \
-            ! -name '.*' \
-            | sed 's|^\./||' | sort)
-
-          # Build JSON
-          echo "[" > manifest.json
-          for i in "${!entries[@]}"; do
-            if [ $i -gt 0 ]; then
-              echo "," >> manifest.json
-            fi
-            printf '%s' "${entries[$i]}" >> manifest.json
-          done
-          echo "" >> manifest.json
-          echo "]" >> manifest.json
-
-          echo "Generated manifest.json:"
-          cat manifest.json
-
-      - name: Commit changes
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
+          git config user.name github-actions
+          git config user.email github-actions@github.com
           git add manifest.json
-          git diff --staged --quiet || git commit -m "chore: update manifest.json"
-          git push
+          if git diff --staged --quiet; then
+            echo "No changes to manifest.json"
+          else
+            git commit -m "chore: update manifest.json"
+            git push
+          fi
