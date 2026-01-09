@@ -16,6 +16,10 @@ on:
       - '~/**/*.enc'
       - '~/**/*.keys'
       - '~/**/.meta.json'
+      - 'generate-manifest.py'
+      - '.github/workflows/generate-manifest.yml'
+    paths-ignore:
+      - 'manifest.json'
 
 permissions:
   contents: write
