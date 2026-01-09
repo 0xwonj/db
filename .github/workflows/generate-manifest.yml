@@ -3,21 +3,6 @@ name: Generate Manifest
 on:
   push:
     branches: [main]
-    paths:
-      - '~/**/*.md'
-      - '~/**/*.pdf'
-      - '~/**/*.png'
-      - '~/**/*.jpg'
-      - '~/**/*.jpeg'
-      - '~/**/*.gif'
-      - '~/**/*.webp'
-      - '~/**/*.svg'
-      - '~/**/*.link'
-      - '~/**/*.enc'
-      - '~/**/*.keys'
-      - '~/**/.meta.json'
-      - 'generate-manifest.py'
-      - '.github/workflows/generate-manifest.yml'
     paths-ignore:
       - 'manifest.json'
 
