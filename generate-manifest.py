@@ -158,15 +158,9 @@ def process_file(filepath: Path, content_dir: Path) -> dict[str, Any] | None:
     if any(part.startswith('.') for part in rel_path.split('/')):
         return None
 
-    # For .enc files, use the original filename (without .enc) as the path
-    # e.g., secret.md.enc -> secret.md
-    display_path = rel_path
-    if filepath.suffix.lower() == '.enc':
-        display_path = rel_path[:-4]  # Remove .enc suffix
-
     entry = {
-        "path": display_path,
-        "title": Path(display_path).stem,  # Default to filename without extension
+        "path": rel_path,
+        "title": Path(rel_path).stem,  # Default to filename without extension
         "size": filepath.stat().st_size,
         "modified": get_git_modified_time(str(filepath)),
         "tags": [],
