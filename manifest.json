@@ -29,7 +29,7 @@
       "tags": []
     },
     {
-      "path": "private/secret.md",
+      "path": "private/secret.md.enc",
       "title": "Secret Document",
       "size": 39,
       "modified": 1767928741,
